@@ -68,7 +68,6 @@ func heapify_down(arr *[]Node, index int){
 	right_child_index := (index * 2) + 2
 	lenght := len(*arr)
 
-
 	index_for_swapping := index
 
 	if left_child_index < lenght && (*arr)[left_child_index].freq < (*arr)[index].freq{
@@ -90,47 +89,72 @@ func heapify_down(arr *[]Node, index int){
 func huffman_encoding_shenanigans(minheap *MinHeap){
 	for len(minheap.arr) > 1{
 		left_node, _ := minheap.remove_by_index(0)
+		show_minheap(minheap)
 		right_node, _ := minheap.remove_by_index(0)
-		if left_node.freq + right_node.freq == 6 || left_node.freq + right_node.freq == 5{
-			fmt.Printf("%v\n", left_node)
-			fmt.Printf("%v\n", right_node)
-		} 
+		show_minheap(minheap)
 		new_node := Node{freq: left_node.freq + right_node.freq, left: &left_node, right: &right_node}
 		minheap.insert(new_node)
 	}
 }
 
-func traverse_huffman_tree(node *Node){
-	arr := []*Node{node}
+func traverse_huffman_tree(node *Node, arr []int){
+	if node.left != nil {
+		arr = append(arr, 0)
+		traverse_huffman_tree(node.left, arr)
+	}
 
-	for len(arr) > 0 {
-		current_node := arr[0]
-		fmt.Printf("%c %d\n", current_node.char, current_node.freq)
-		arr = arr[1:]
-		if current_node.left != nil{
-			arr = append(arr, current_node.left)
-		}
-		if current_node.right != nil{
-			arr = append(arr, current_node.right)
-		}
+	if node.left != nil {
+		arr = append(arr, 1)
+		traverse_huffman_tree(node.right, arr)
+	}
+	if node.left == nil && node.right == nil {
+		fmt.Printf("%v %c\n", arr, node.char)
 	}
 }
 
-func main(){
-	hashmap := make(map[byte]int)
-	test := "balls"
-	for i := range test{
-		hashmap[test[i]] += 1
+func show_minheap(minheap *MinHeap){
+	for i:= range minheap.arr {
+		fmt.Printf("%d ", minheap.arr[i].freq)
 	}
+	fmt.Println()
+}
+
+func main(){
+	// hashmap := make(map[byte]int)
+	// test := "loremipsumdolorsitamet"
+	// for i := range test{
+	// 	hashmap[test[i]] += 1
+	// }
 
 	minHeap := MinHeap{}
-	for key, value := range hashmap{
-		minHeap.insert(Node{freq: value, char: key})
-	}
+	// for key, value := range hashmap{
+	// 	minHeap.insert(Node{freq: value, char: key})
+	// }
+	minHeap.insert(Node{freq: 1, char: 'a'})
+	minHeap.insert(Node{freq: 1, char: 'a'})
+	minHeap.insert(Node{freq: 1, char: 'a'})
+	minHeap.insert(Node{freq: 2, char: 'a'})
+	minHeap.insert(Node{freq: 2, char: 'a'})
+	minHeap.insert(Node{freq: 2, char: 'a'})
+	minHeap.insert(Node{freq: 3, char: 'a'})
+	minHeap.insert(Node{freq: 2, char: 'a'})
 
-	huffman_encoding_shenanigans(&minHeap)
-	fmt.Printf("Top of huffman tree: %v\n", minHeap.arr[0])
-	traverse_huffman_tree(&minHeap.arr[0])
+	show_minheap(&minHeap)
+	for range minHeap.arr{
+		minHeap.remove_by_index(0)
+		show_minheap(&minHeap)
+	}
+	// huffman_encoding_shenanigans(&minHeap)
+	// fmt.Printf("Top of huffman tree: %v\n", minHeap.arr[0])
+	// traverse_huffman_tree(&minHeap.arr[0], []int{})
+
+	// create a huffman tree from the string
+	// create an encoded string
+
+	// send tree
+	// send encoded value
+
+	// decode value by using the tree
 }
 
 
