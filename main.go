@@ -15,6 +15,10 @@ type MinHeap struct{
 	arr []Node
 }
 
+func (mh *MinHeap) swap(i, j int){
+	(*mh).arr[i], (*mh).arr[j] = (*mh).arr[j], (*mh).arr[i]
+}
+
 func (mh *MinHeap) insert(node Node){
 	if len(mh.arr) == 0{
 		mh.arr = append(mh.arr, node)
@@ -29,71 +33,79 @@ func (mh *MinHeap) insert(node Node){
 // parent (i - 1) / 2
 
 func heapify_up(arr *[]Node, index int){
-	if index == 0 || (*arr)[index].freq >= (*arr)[(index - 1) / 2].freq{
+	if index == 0{
 		return
 	}
 
 	current := (*arr)[index]
 
 	parentIdx := (index - 1) / 2
-	parentValue := (*arr)[parentIdx]
+	parent := (*arr)[parentIdx]
 
-	(*arr)[index] = parentValue
-
-	(*arr)[parentIdx] = current
-
-	heapify_up(arr, parentIdx)
+	if parent.freq > current.freq {;
+		(*arr)[parentIdx] = current
+		(*arr)[index] = parent
+		heapify_up(arr, parentIdx)
+	}
 }
 
 // replace root or element which needs to be deleted with the last element
 func (mh *MinHeap) remove_by_index(index int) (Node, bool){
+	lenght := len((*mh).arr)
 	if index > len(mh.arr) || index < 0{
 		return Node{}, false
 	}
 
-	result := mh.arr[index]
+	mh.swap(0, lenght - 1)
 
-	// set last item to top
-	mh.arr[index] = mh.arr[len(mh.arr) - 1]
-	if len(mh.arr) > 0{
-		mh.arr = mh.arr[:len(mh.arr) - 1]
-		heapify_down(&mh.arr, index)
-	}
+	result := (*mh).arr[lenght - 1]
+	(*mh).arr = (*mh).arr[:lenght - 1]
+
+	mh.heapify_down(0)
 
 	return result, true
 }
 
-func heapify_down(arr *[]Node, index int){
-	left_child_index := (index * 2) + 1
-	right_child_index := (index * 2) + 2
-	lenght := len(*arr)
+func (mh *MinHeap) heapify_down(index int) {
+	lIdx := index * 2 + 1
+	rIdx := index * 2 + 2
 
-	index_for_swapping := index
-
-	if left_child_index < lenght && (*arr)[left_child_index].freq < (*arr)[index].freq{
-		index_for_swapping = left_child_index
+	if index >= len((*mh).arr) -1 || lIdx >= len((*mh).arr) - 1 {
+		return
 	}
 
-	if right_child_index < lenght && (*arr)[right_child_index].freq < (*arr)[index].freq{
-		index_for_swapping = right_child_index
+	// WE NEED TO REPLACE WITH THE SMALLEST CHILD
+
+	c := (*mh).arr[index]
+	l := (*mh).arr[lIdx]
+	r := (*mh).arr[rIdx]
+
+	if l.freq > r.freq && c.freq > r.freq {
+		mh.swap(rIdx, index)
+		mh.heapify_down(rIdx)
 	}
-	
-	if index_for_swapping != index{
-		current_node := (*arr)[index]
-		(*arr)[index] = (*arr)[index_for_swapping]
-		(*arr)[index_for_swapping] = current_node
-		heapify_down(arr, index_for_swapping)
+	if r.freq > l.freq && c.freq > l.freq {
+		mh.swap(lIdx, index)
+		mh.heapify_down(lIdx)
+	}
+	if l.freq == r.freq && c.freq > r.freq{
+		mh.swap(lIdx, index)
+		mh.heapify_down(lIdx)
 	}
 }
 
 func huffman_encoding_shenanigans(minheap *MinHeap){
 	for len(minheap.arr) > 1{
 		left_node, _ := minheap.remove_by_index(0)
-		show_minheap(minheap)
+		fmt.Printf("LN -> %d %c\n", left_node.freq, left_node.char)
 		right_node, _ := minheap.remove_by_index(0)
-		show_minheap(minheap)
+		fmt.Printf("RN -> %d %c\n", right_node.freq, right_node.char)
 		new_node := Node{freq: left_node.freq + right_node.freq, left: &left_node, right: &right_node}
 		minheap.insert(new_node)
+		fmt.Printf("NEW N -> %d %c\n", new_node.freq, new_node.char)
+		fmt.Printf("After insert ")
+		show_minheap(&minheap.arr)
+		fmt.Println()
 	}
 }
 
@@ -103,7 +115,7 @@ func traverse_huffman_tree(node *Node, arr []int){
 		traverse_huffman_tree(node.left, arr)
 	}
 
-	if node.left != nil {
+	if node.right != nil {
 		arr = append(arr, 1)
 		traverse_huffman_tree(node.right, arr)
 	}
@@ -112,41 +124,58 @@ func traverse_huffman_tree(node *Node, arr []int){
 	}
 }
 
-func show_minheap(minheap *MinHeap){
-	for i:= range minheap.arr {
-		fmt.Printf("%d ", minheap.arr[i].freq)
+func bfs(node *Node){
+	counter := 0
+	arr := []*Node{}
+	arr = append(arr, node)
+	for len(arr) > 0{
+		curr := arr[0]
+		arr = arr[1:]
+		if counter == 3 {
+			fmt.Println()
+			fmt.Println()
+			counter = 0
+		}
+		char := curr.char
+		if char == 0 {
+			char = '*'
+		}
+		fmt.Printf("%d %c ", curr.freq, char)
+		counter += 1
+		if curr.left != nil{
+			arr = append(arr, curr.left)
+		}
+
+		if curr.right != nil{
+			arr = append(arr, curr.right)
+		}
 	}
-	fmt.Println()
+}
+
+func show_minheap(arr *[]Node){
+	for i:= range (*arr){
+		fmt.Printf("%d ", (*arr)[i].freq)
+	}
+	fmt.Print("\n")
 }
 
 func main(){
-	// hashmap := make(map[byte]int)
-	// test := "loremipsumdolorsitamet"
-	// for i := range test{
-	// 	hashmap[test[i]] += 1
-	// }
+	hashmap := make(map[byte]int)
+	test := "loremipsumdolorsitamet"
+	for i := range test{ 
+		hashmap[test[i]] += 1
+	}
 
 	minHeap := MinHeap{}
-	// for key, value := range hashmap{
-	// 	minHeap.insert(Node{freq: value, char: key})
-	// }
-	minHeap.insert(Node{freq: 1, char: 'a'})
-	minHeap.insert(Node{freq: 1, char: 'a'})
-	minHeap.insert(Node{freq: 1, char: 'a'})
-	minHeap.insert(Node{freq: 2, char: 'a'})
-	minHeap.insert(Node{freq: 2, char: 'a'})
-	minHeap.insert(Node{freq: 2, char: 'a'})
-	minHeap.insert(Node{freq: 3, char: 'a'})
-	minHeap.insert(Node{freq: 2, char: 'a'})
-
-	show_minheap(&minHeap)
-	for range minHeap.arr{
-		minHeap.remove_by_index(0)
-		show_minheap(&minHeap)
+	for key, value := range hashmap{
+		minHeap.insert(Node{freq: value, char: key})
 	}
-	// huffman_encoding_shenanigans(&minHeap)
-	// fmt.Printf("Top of huffman tree: %v\n", minHeap.arr[0])
-	// traverse_huffman_tree(&minHeap.arr[0], []int{})
+
+	show_minheap(&minHeap.arr)
+	huffman_encoding_shenanigans(&minHeap)
+	fmt.Printf("Top of huffman tree: %v\n", minHeap.arr[0])
+	// bfs(&minHeap.arr[0])
+	traverse_huffman_tree(&minHeap.arr[0], []int{})
 
 	// create a huffman tree from the string
 	// create an encoded string
