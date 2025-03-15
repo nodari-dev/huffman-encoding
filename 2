@@ -209,106 +209,132 @@ func main(){
 	// for i := range huffman_table{
 	// 	fmt.Printf("%c %d and %v\n", i, huffman_table[i].bits_to_read, huffman_table[i].b_arr)
 	// }
+
+
+	// result := []byte{}
+	// for char := range test{
+	// 	bits_to_read := huffman_table[byte(char)].bits_to_read
+	// 	b_arr := huffman_table[byte(char)].b_arr
+	// 	// do count down
+	// 	bits_read := bits_to_read
+	// 	bits_left_to_fill := 0
+	//
+	// 	if bits_to_read > 8{
+	// 		// array of 2+ bytes
+	// 	}
+	//
+	// 	if bits_to_read == 8{
+	// 		// array of one full byte
+	// 	}
+	//
+	// 	}
+	// } 
+
+
+	resut := []int{0b00001111}
+	bits_available_to_fill := uint16(4)
+
+	fmt.Printf("Before: %08b\n", resut[0])
+
+	// from_arr := []int{0b11110101} 
+	// index_from := 0
+	total_bits_left_to_move := uint16(8)
+	// index_to := 0
+	// bits_moved := 0
+	// selected_bits := 0b00000000
+	// for char_indx := range test{
+	// 	huffman_table_item := huffman_table[test[char_indx]]
+	// }
+
+	// for index_from != len(from_arr) - 1{
+	// 	if available_bits_space == 0{
+	// 		// filled the byte
+	// 		// move to the next
+	// 		resut = append(resut, 0b00000000)
+	// 		index_to += 1
+	// 		available_bits_space = 8
+	// 	}
+	//
+	// 	if bits_moved == 8{
+	// 		index_from += 1
+	// 		bits_moved = 0
+	// 	}
+	// 	
+	// 	if available_bits_space != 8{
+	// 		// move only when we filled some poriton of byte
+	// 		// do move left by available_bits_space
+	// 		resut[index_to] <<= available_bits_space
+	// 	}
+	// 	
+	// 	if bits_left_to_move < available_bits_space{
+	// 		selected_bits = from_arr[index_from] >> (8 - available_bits_space)
+	// 		resut[index_to] = resut[index_to] | selected_bits
+	// 	}
+	//
+	// 	if bits_left_to_move > 8 && bits_left_to_move > available_bits_space{
+	// 	}
+	//
+	// 	if bits_left_to_move > available_bits_space {
+	// 		// selected_bits = from_arr[index_from] >> (8 - available_bits_space - bits_left_to_move)
+	// 		resut[index_to] = resut[index_to] | selected_bits
+	// 	}
+	//
+	// 	if bits_left_to_move == 0 {
+	// 		// this char is done
+	// 		// move to the next one
+	// 	}
+	//
+	// }
 	
 	// fmt.Printf("From: %08b\n", from)
 
+	from_list := []int{0b11101101, 0b010011000}
+	to_list := []byte{0b00001011}
+	to_list_index := 0
+
+	bits_available_to_fill = 4
+	total_bits_left_to_move = 13
+
+	temporary_from := from_list[0]
+
+	for total_bits_left_to_move > 0{
+
+		fmt.Printf("From: %08b\n", from_list[0])
+		if total_bits_left_to_move > 8
+		if bits_available_to_fill != 8{
+			// MAYBE IS SHOULD REMOVE IF
+			to_list[to_list_index] <<= bits_available_to_fill
+		}
 
 
-	// arr_to_move := []int{0b11101101, 0b010011000}
-	// total_to_move = 13
-	arr_to_move := []int{0b11111001, 0b11111111}
-	index_to_move := 0
-	total_to_move := 8
+		// if bits_left_to_move == 8 {
+		// 	//
+		// }
 
-	arr_to_fill := []int{0b11000000}
-	index_to_fill := 0
-	to_fill := 4
+		if total_bits_left_to_move < bits_available_to_fill{
 
-	fmt.Print("To move: ")
-	for i:= range arr_to_move{
-		fmt.Printf("%08b ", arr_to_move[i])
+		}
+
+		if total_bits_left_to_move != 8 && total_bits_left_to_move > bits_available_to_fill{
+			mask := get_bit_mask(int(bits_available_to_fill))
+			fmt.Printf("Mask: %08b \n", mask)
+
+			temporary_from &= mask
+			fmt.Printf("From with mask: %08b\n", temporary_from)
+
+			// important part
+			total_bits_left_to_move -= bits_available_to_fill
+		}
+
+
+		// fmt.Printf("Selected: %08b\n", selected_bits)
+		resut[0] <<= bits_available_to_fill
+		resut[0] |= temporary_from
+
+		// IMPORTANT
+		// if I set last bits and its the byte to get bits from I need to move bits anyway
+		fmt.Printf("Result: %08b\n", resut[0])
 	}
-
-	fmt.Printf("\nTo fill: ")
-	for i:= range arr_to_fill{
-		fmt.Printf("%08b ", arr_to_fill[i])
-	}
-	fmt.Println()
-
-	to_move := 0
-	for total_to_move > 0{
-		fmt.Printf("Total to move: %d\n", total_to_move)
-
-		// CHANGE INDEX FROM 
-		if total_to_move >= 8{
-			to_move = 8
-		} else {
-			to_move = total_to_move
-		}
-
-		if to_fill == 0{
-			// byte was filled
-			// time to create a new one
-			arr_to_fill = append(arr_to_fill, 0b00000000)
-			to_fill = 8
-			index_to_fill += 1
-		}
-
-		if to_fill == 8 && to_fill == to_move{
-			// 0000.0000 <- 1111.1111
-			// to fill 8, to move 8
-			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
-			to_fill = 0
-
-			// important
-			total_to_move -= to_move
-			continue
-		}
-
-		if to_fill == 8 && to_fill > to_move{
-			// 0000.0000 <- 0000.1011
-			// to fill 8, to move 4
-			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
-			// shift to the right for new bits
-			arr_to_fill[index_to_fill] <<= (to_fill - to_move)
-			to_fill -= to_move
-
-			// important
-			total_to_move -= to_move
-			continue
-		}
-
-		if to_fill >= to_move {
-			// 1111.0000 <- 0000.1011
-			// to fill 4, to move 4
-			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
-			to_fill =- to_move
-			total_to_move -= to_move
-			continue
-		}
-
-		if to_fill != 0 && to_fill < to_move{
-			// 1111.0000 <- 1111.1011
-			// to fill 4, to move 8
-			// 1111.1011 >> 4 = 0000.1111
-			selected_bits :=  arr_to_move[index_to_move] >> (8 - to_fill)
-			arr_to_fill[index_to_fill] |= selected_bits
-			// hide used bits by using mask
-			// 1111.1011 & 0000.1111 (mask) = 0000.1011
-			arr_to_move[index_to_move] &= get_bit_mask(to_fill)
-			to_move -= to_fill
-			total_to_move -= to_move
-			to_fill = 0
-			continue
-
-		}
-	}
-
-	fmt.Printf("Result: ")
-	for i:= range arr_to_fill{
-		fmt.Printf("%08b ", arr_to_fill[i])
-	}
-	fmt.Printf("\n")
 
 
 	// create a huffman tree from the string
@@ -324,7 +350,5 @@ func main(){
 }
 
 func get_bit_mask(number_of_used_bits int) int{
-	// returns mask in styles 0000.1111
-	// where 0000 is a number of used bits
 	return 255 >> (8 - number_of_used_bits)
 }
