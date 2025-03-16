@@ -214,15 +214,21 @@ func main(){
 
 
 
-	// arr_to_move := []int{0b11101101, 0b010011000}
-	// total_to_move = 13
-	arr_to_move := []int{0b11111001, 0b11111111}
+	// arr_to_move := []int{0b11111001, 0b11111111}
+	// index_to_move := 0
+	// total_to_move := 13
+	//
+	// arr_to_fill := []int{0b11000000}
+	// index_to_fill := 0
+	// to_fill := 4
+
+	arr_to_move := []int{0b01111111}
 	index_to_move := 0
-	total_to_move := 8
+	total_to_move := 5
 
 	arr_to_fill := []int{0b11000000}
 	index_to_fill := 0
-	to_fill := 4
+	to_fill := 5
 
 	fmt.Print("To move: ")
 	for i:= range arr_to_move{
@@ -239,22 +245,26 @@ func main(){
 	for total_to_move > 0{
 		fmt.Printf("Total to move: %d\n", total_to_move)
 
-		// CHANGE INDEX FROM 
-		if total_to_move >= 8{
-			to_move = 8
-		} else {
-			to_move = total_to_move
+		if to_move == 0{
+			// do this only when the whole byte is transfered
+			if total_to_move >= 8{
+				to_move = 8
+			} else {
+				to_move = total_to_move
+			}
 		}
 
-		if to_fill == 0{
+		if to_fill <= 0{
 			// byte was filled
 			// time to create a new one
+			fmt.Println("new byte created")
 			arr_to_fill = append(arr_to_fill, 0b00000000)
 			to_fill = 8
 			index_to_fill += 1
 		}
 
 		if to_fill == 8 && to_fill == to_move{
+			fmt.Println("to_fill == 8 && to_fill == to_move")
 			// 0000.0000 <- 1111.1111
 			// to fill 8, to move 8
 			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
@@ -266,6 +276,7 @@ func main(){
 		}
 
 		if to_fill == 8 && to_fill > to_move{
+			fmt.Println("to_fill == 8 && to_fill > to_move")
 			// 0000.0000 <- 0000.1011
 			// to fill 8, to move 4
 			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
@@ -275,12 +286,21 @@ func main(){
 
 			// important
 			total_to_move -= to_move
+			to_move = 0
+			// we used all bits, move the next byte
+
+			if index_to_fill + 1 <= len(arr_to_move) - 1{
+				index_to_move+=1
+			}
+
 			continue
 		}
 
 		if to_fill >= to_move {
+			fmt.Println("to_fill >= to_move")
 			// 1111.0000 <- 0000.1011
 			// to fill 4, to move 4
+			fmt.Printf("max to move: %d, %d, max to fill: %d, %d\n", len(arr_to_move) - 1, index_to_move, len(arr_to_fill) - 1, index_to_fill)
 			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
 			to_fill =- to_move
 			total_to_move -= to_move
@@ -288,6 +308,7 @@ func main(){
 		}
 
 		if to_fill != 0 && to_fill < to_move{
+			fmt.Println("to_fill != 0 && to_fill < to_move")
 			// 1111.0000 <- 1111.1011
 			// to fill 4, to move 8
 			// 1111.1011 >> 4 = 0000.1111
@@ -298,6 +319,12 @@ func main(){
 			arr_to_move[index_to_move] &= get_bit_mask(to_fill)
 			to_move -= to_fill
 			total_to_move -= to_move
+
+			// if we used all bits, then move the next byte
+			if to_move <= 0 && len(arr_to_move) > 1{
+				index_to_move+=1
+			}
+
 			to_fill = 0
 			continue
 
