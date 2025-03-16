@@ -118,7 +118,6 @@ func generate_huffman_table(
 	b byte,
 	huffman_table *map[byte]Huffman_table_item,
 ){
-
 	// if we are traversing the tree and byte_count > 8
 	// we need to add full byte to arr
 	// then create a new byte 
@@ -222,9 +221,9 @@ func main(){
 	// index_to_fill := 0
 	// to_fill := 4
 
-	byte_arr_to_move := []int{0b01101000}
+	byte_arr_to_move := []int{0b00000011}
 	byte_index_to_move := 0
-	total_bits_to_move := 5
+	total_bits_to_move := 2
 
 	byte_arr_to_fill := []int{0b11111000}
 	byte_index_to_fill := 0
@@ -242,9 +241,9 @@ func main(){
 	fmt.Println()
 
 	bits_per_byte_to_move := 0
-	for total_bits_to_move > 0{
+	for total_bits_to_move > 0 {
 		fmt.Printf("Total to move: %d\n", total_bits_to_move)
-		fmt.Printf("Left %08b\n", byte_arr_to_move[byte_index_to_move])
+		fmt.Printf("To move %08b\n", byte_arr_to_move[byte_index_to_move])
 
 		if bits_per_byte_to_move == 0{
 			// do this only when the whole byte is transfered
@@ -264,7 +263,7 @@ func main(){
 			byte_index_to_fill += 1
 		}
 
-		if bits_to_fill == 8 && bits_to_fill == bits_per_byte_to_move{
+		if bits_to_fill == 8 && bits_to_fill == bits_per_byte_to_move {
 			fmt.Println("to_fill == 8 && to_fill == to_move")
 			// 0000.0000 <- 1111.1111
 			// to fill 8, to move 8
@@ -298,23 +297,41 @@ func main(){
 			continue
 		}
 
-		if bits_to_fill >= bits_per_byte_to_move {
-			fmt.Println("to_fill >= to_move")
-			// 1111.0000 <- 0000.1011
+		if bits_to_fill > bits_per_byte_to_move {
+			fmt.Println("to_fill > to_move")
+			// 1111.1000 <- 0000.0011
+			// to fill 4, to move 3
+			// match the size and shift
+			// 1111.1000 <- 0000.0110
 			// to fill 4, to move 4
-			fmt.Printf("max to move: %d, %d, max to fill: %d, %d\n", len(byte_arr_to_move) - 1, byte_index_to_move, len(byte_arr_to_fill) - 1, byte_index_to_fill)
-			byte_arr_to_fill[byte_index_to_fill] |= byte_arr_to_move[byte_index_to_move]
+
+			selected_bits := byte_arr_to_move[byte_index_to_move] << (bits_to_fill - bits_per_byte_to_move)
+			byte_arr_to_fill[byte_index_to_fill] |= selected_bits
 			bits_to_fill =- bits_per_byte_to_move
 			total_bits_to_move -= bits_per_byte_to_move
 			continue
 		}
 
+		if bits_to_fill == bits_per_byte_to_move && bits_to_fill != 0 {
+			fmt.Println("to_fill == to_move")
+			// 1111.1000 <- 0000.0111
+			// to fill 3, to move 3
+
+			// byte_arr_to_fill[byte_index_to_fill] |= byte_arr_to_move[byte_index_to_move]
+			// bits_to_fill = 0
+			
+			// // important
+			// total_bits_to_move -= bits_per_byte_to_move
+			// continue
+		}
+
 		if bits_to_fill != 0 && bits_to_fill < bits_per_byte_to_move{
-			fmt.Println("to_fill != 0 && to_fill < to_move")
 			// 1111.0000 <- 1111.1011
 			// to fill 4, to move 8
 			// 1111.1011 >> 4 = 0000.1111
-			selected_bits := byte_arr_to_move[byte_index_to_move] >> (8 - bits_to_fill)
+			fmt.Println("to_fill != 0 && to_fill < to_move")
+
+			selected_bits := byte_arr_to_move[byte_index_to_move] >> (bits_per_byte_to_move - bits_to_fill)
 			fmt.Printf("Selected bits: %08b\n", selected_bits)
 			byte_arr_to_fill[byte_index_to_fill] |= selected_bits
 			// hide used bits by using mask
@@ -331,7 +348,6 @@ func main(){
 
 			bits_to_fill = 0
 			continue
-
 		}
 	}
 
@@ -357,5 +373,6 @@ func main(){
 func get_bit_mask(number_of_used_bits int) int{
 	// returns mask in styles 0000.1111
 	// where 0000 is a number of used bits
-	return 255 >> (8 - number_of_used_bits)
+	return 255 >> number_of_used_bits
+	// return 255 >> (8 - number_of_used_bits)
 }
