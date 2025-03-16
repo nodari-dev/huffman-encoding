@@ -222,118 +222,122 @@ func main(){
 	// index_to_fill := 0
 	// to_fill := 4
 
-	arr_to_move := []int{0b01111111}
-	index_to_move := 0
-	total_to_move := 5
+	byte_arr_to_move := []int{0b01101000}
+	byte_index_to_move := 0
+	total_bits_to_move := 5
 
-	arr_to_fill := []int{0b11000000}
-	index_to_fill := 0
-	to_fill := 5
+	byte_arr_to_fill := []int{0b11111000}
+	byte_index_to_fill := 0
+	bits_to_fill := 3
 
 	fmt.Print("To move: ")
-	for i:= range arr_to_move{
-		fmt.Printf("%08b ", arr_to_move[i])
+	for i:= range byte_arr_to_move{
+		fmt.Printf("%08b ", byte_arr_to_move[i])
 	}
 
 	fmt.Printf("\nTo fill: ")
-	for i:= range arr_to_fill{
-		fmt.Printf("%08b ", arr_to_fill[i])
+	for i:= range byte_arr_to_fill{
+		fmt.Printf("%08b ", byte_arr_to_fill[i])
 	}
 	fmt.Println()
 
-	to_move := 0
-	for total_to_move > 0{
-		fmt.Printf("Total to move: %d\n", total_to_move)
+	bits_per_byte_to_move := 0
+	for total_bits_to_move > 0{
+		fmt.Printf("Total to move: %d\n", total_bits_to_move)
+		fmt.Printf("Left %08b\n", byte_arr_to_move[byte_index_to_move])
 
-		if to_move == 0{
+		if bits_per_byte_to_move == 0{
 			// do this only when the whole byte is transfered
-			if total_to_move >= 8{
-				to_move = 8
+			if total_bits_to_move >= 8{
+				bits_per_byte_to_move = 8
 			} else {
-				to_move = total_to_move
+				bits_per_byte_to_move = total_bits_to_move
 			}
 		}
 
-		if to_fill <= 0{
+		if bits_to_fill <= 0{
 			// byte was filled
 			// time to create a new one
 			fmt.Println("new byte created")
-			arr_to_fill = append(arr_to_fill, 0b00000000)
-			to_fill = 8
-			index_to_fill += 1
+			byte_arr_to_fill = append(byte_arr_to_fill, 0b00000000)
+			bits_to_fill = 8
+			byte_index_to_fill += 1
 		}
 
-		if to_fill == 8 && to_fill == to_move{
+		if bits_to_fill == 8 && bits_to_fill == bits_per_byte_to_move{
 			fmt.Println("to_fill == 8 && to_fill == to_move")
 			// 0000.0000 <- 1111.1111
 			// to fill 8, to move 8
-			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
-			to_fill = 0
+			byte_arr_to_fill[byte_index_to_fill] |= byte_arr_to_move[byte_index_to_move]
+			bits_to_fill = 0
 
 			// important
-			total_to_move -= to_move
+			total_bits_to_move -= bits_per_byte_to_move
 			continue
 		}
 
-		if to_fill == 8 && to_fill > to_move{
+		if bits_to_fill == 8 && bits_to_fill > bits_per_byte_to_move{
 			fmt.Println("to_fill == 8 && to_fill > to_move")
 			// 0000.0000 <- 0000.1011
 			// to fill 8, to move 4
-			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
+			byte_arr_to_fill[byte_index_to_fill] |= byte_arr_to_move[byte_index_to_move]
 			// shift to the right for new bits
-			arr_to_fill[index_to_fill] <<= (to_fill - to_move)
-			to_fill -= to_move
+			byte_arr_to_fill[byte_index_to_fill] <<= (bits_to_fill - bits_per_byte_to_move)
+			bits_to_fill -= bits_per_byte_to_move
 
 			// important
-			total_to_move -= to_move
-			to_move = 0
+			total_bits_to_move -= bits_per_byte_to_move
+			bits_per_byte_to_move = 0
 			// we used all bits, move the next byte
 
-			if index_to_fill + 1 <= len(arr_to_move) - 1{
-				index_to_move+=1
+			if byte_index_to_fill + 1 <= len(byte_arr_to_move) - 1{
+				fmt.Println("Moving to the next byte")
+				byte_index_to_move+=1
 			}
 
 			continue
 		}
 
-		if to_fill >= to_move {
+		if bits_to_fill >= bits_per_byte_to_move {
 			fmt.Println("to_fill >= to_move")
 			// 1111.0000 <- 0000.1011
 			// to fill 4, to move 4
-			fmt.Printf("max to move: %d, %d, max to fill: %d, %d\n", len(arr_to_move) - 1, index_to_move, len(arr_to_fill) - 1, index_to_fill)
-			arr_to_fill[index_to_fill] |= arr_to_move[index_to_move]
-			to_fill =- to_move
-			total_to_move -= to_move
+			fmt.Printf("max to move: %d, %d, max to fill: %d, %d\n", len(byte_arr_to_move) - 1, byte_index_to_move, len(byte_arr_to_fill) - 1, byte_index_to_fill)
+			byte_arr_to_fill[byte_index_to_fill] |= byte_arr_to_move[byte_index_to_move]
+			bits_to_fill =- bits_per_byte_to_move
+			total_bits_to_move -= bits_per_byte_to_move
 			continue
 		}
 
-		if to_fill != 0 && to_fill < to_move{
+		if bits_to_fill != 0 && bits_to_fill < bits_per_byte_to_move{
 			fmt.Println("to_fill != 0 && to_fill < to_move")
 			// 1111.0000 <- 1111.1011
 			// to fill 4, to move 8
 			// 1111.1011 >> 4 = 0000.1111
-			selected_bits :=  arr_to_move[index_to_move] >> (8 - to_fill)
-			arr_to_fill[index_to_fill] |= selected_bits
+			selected_bits := byte_arr_to_move[byte_index_to_move] >> (8 - bits_to_fill)
+			fmt.Printf("Selected bits: %08b\n", selected_bits)
+			byte_arr_to_fill[byte_index_to_fill] |= selected_bits
 			// hide used bits by using mask
 			// 1111.1011 & 0000.1111 (mask) = 0000.1011
-			arr_to_move[index_to_move] &= get_bit_mask(to_fill)
-			to_move -= to_fill
-			total_to_move -= to_move
+			byte_arr_to_move[byte_index_to_move] &= get_bit_mask(bits_to_fill)
+			bits_per_byte_to_move -= bits_to_fill
+			total_bits_to_move -= bits_per_byte_to_move
 
 			// if we used all bits, then move the next byte
-			if to_move <= 0 && len(arr_to_move) > 1{
-				index_to_move+=1
+			if bits_per_byte_to_move <= 0 && len(byte_arr_to_move) > 1{
+				fmt.Println("Moving to the next byte")
+				byte_index_to_move+=1
 			}
 
-			to_fill = 0
+			bits_to_fill = 0
 			continue
 
 		}
 	}
 
 	fmt.Printf("Result: ")
-	for i:= range arr_to_fill{
-		fmt.Printf("%08b ", arr_to_fill[i])
+	for i:= range byte_arr_to_fill{
+		fmt.Printf("%08b ", byte_arr_to_fill[i])
 	}
 	fmt.Printf("\n")
 
